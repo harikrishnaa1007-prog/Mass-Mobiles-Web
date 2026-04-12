@@ -4,62 +4,62 @@
 <head>
   <title>Mass Mobiles</title>
   <style>
-    body { font-family: Arial; text-align: center; }
-    .card { border:1px solid #ccc; padding:10px; margin:10px; width:200px; display:inline-block;}
+    body { font-family: Arial; text-align:center; }
+    .card { border:1px solid #ccc; margin:10px; padding:10px; display:inline-block; width:200px; }
     img { width:100%; }
-    .out { color:red; }
+    .out { color:red; font-weight:bold; }
   </style>
 </head>
 
 <body>
 
 <h1>Mass Mobiles</h1>
-
 <h2 id="offer"></h2>
 
 <div id="mobiles"></div>
 
-<!-- Firebase -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, collection, onSnapshot, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
-
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
-
-<script>
 const firebaseConfig = {
-  // 🔴 PASTE const firebaseConfig = {
   apiKey: "AIzaSyB0W99mqlABKXhuivFKEHH6c3LC2JGzQGA",
   authDomain: "mass-mobiles-fb016.firebaseapp.com",
   projectId: "mass-mobiles-fb016",
   storageBucket: "mass-mobiles-fb016.firebasestorage.app",
   messagingSenderId: "413904676588",
   appId: "1:413904676588:web:b0e3093d450ea852a767c9"
-};SAME CONFIG HERE
 };
 
-const app = firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-db.collection("mobiles").onSnapshot((snapshot) => {
+// LIVE DATA
+onSnapshot(collection(db, "mobiles"), (snapshot) => {
   let html = "";
   snapshot.forEach((doc) => {
     let m = doc.data();
-    let stock = m.stock > 0 ? "Stock: " + m.stock : "<span class='out'>Out of Stock</span>";
+
+    let stockText = m.stock > 0 
+      ? "Stock: " + m.stock 
+      : "<span class='out'>Out of Stock</span>";
 
     html += `
     <div class="card">
       <img src="${m.image}">
       <h3>${m.name}</h3>
-      <p>${m.price}</p>
-      <p>${stock}</p>
+      <p>₹${m.price}</p>
+      <p>${stockText}</p>
     </div>`;
   });
+
   document.getElementById("mobiles").innerHTML = html;
 });
 
-db.collection("offers").doc("main").onSnapshot((doc) => {
-  if(doc.exists){
-    document.getElementById("offer").innerText = doc.data().text;
+// OFFER
+onSnapshot(doc(db, "offers", "main"), (docSnap) => {
+  if (docSnap.exists()) {
+    document.getElementById("offer").innerText = docSnap.data().text;
   }
 });
 </script>
